@@ -27,10 +27,13 @@ const client = async () => {
   })
 
   if (process.argv.length >= 3) {
-    const ma = multiaddr(process.argv[2])
-    console.log(`pinging remote peer at ${process.argv[2]}`)
-    const latency = await node.ping(ma)
-    console.log(`pinged ${process.argv[2]} in ${latency}ms`)
+    const peers = process.argv.splice(2);
+    peers.forEach(async addr => {
+      const ma = multiaddr(addr)
+      console.log(`pinging remote peer at ${addr}`)
+      const latency = await node.ping(ma)
+      console.log(`pinged ${addr} in ${latency}ms`)
+    });
   } else {
     console.log('no remote peer address given, skipping ping')
   }
