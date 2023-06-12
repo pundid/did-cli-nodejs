@@ -33,17 +33,23 @@ const client = async () => {
       console.log(`pinging remote peer at ${addr}`)
       const latency = await node.ping(ma)
       console.log(`pinged ${addr} in ${latency}ms`)
+      console.log(`dialing remote peer at ${addr}`)
+      const stream = await node.dialProtocol(ma, '/did/1.0.0')
+      const message = 'Hello bird!'
+      const encodedMessage = new TextEncoder().encode(message);
+      // await stream.sink(encodedMessage);
+      await stream.close();
     });
   } else {
     console.log('no remote peer address given, skipping ping')
   }
 
-  setInterval(async () => {
-    const resp = await node.pubsub.publish('news', uint8ArrayFromString('Bird bird bird, bird is the word!')).catch(err => {
-      console.error(err)
-    })
-    console.log(resp)
-  }, 1000)
+  // setInterval(async () => {
+  //   const resp = await node.pubsub.publish('news', uint8ArrayFromString('Bird bird bird, bird is the word!')).catch(err => {
+  //     console.error(err)
+  //   })
+  //   console.log(resp)
+  // }, 1000)
 
   // await node.stop()
 }
