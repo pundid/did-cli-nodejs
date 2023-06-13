@@ -7,6 +7,8 @@ import { mplex } from '@libp2p/mplex'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { multiaddr } from 'multiaddr'
 import { fromString as uint8ArrayFromString } from "uint8arrays/from-string";
+import { toString as uint8ArrayToString } from "uint8arrays/to-string";
+import { pipe } from 'it-pipe';
 
 const client = async () => {
   const node = await createLibp2p({
@@ -35,10 +37,20 @@ const client = async () => {
       console.log(`pinged ${addr} in ${latency}ms`)
       console.log(`dialing remote peer at ${addr}`)
       const stream = await node.dialProtocol(ma, '/did/1.0.0')
-      const message = 'Hello bird!'
-      const encodedMessage = new TextEncoder().encode(message);
-      // await stream.sink(encodedMessage);
-      await stream.close();
+      pipe(
+        // Source data
+        [uint8ArrayFromString('hey')],
+        // Write to the stream, and pass its output to the next function
+        stream,
+        // Sink function
+        async function (source) {
+          // For each chunk of data
+          for await (const data of source) {
+            // Output the data
+            console.log('received echo:', uint8ArrayToString(data.subarray()))
+          }
+        }
+      )
     });
   } else {
     console.log('no remote peer address given, skipping ping')
